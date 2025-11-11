@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/charifit/img/favicon.png}">
+  <link rel="stylesheet" th:href="@{/charifit/css/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/charifit/css/style.css}" />
+
+  <title>Preinscripciones</title>
+  <style>
+  /* pushed down to avoid overlapping with the sticky header */
+  .wrap { max-width:1100px; margin:120px auto 24px; padding:24px; background:#fff; border-radius:12px; }
+    .card { padding:14px; border:1px solid #3CC78F; border-radius:10px; margin-bottom:12px; }
+    .row1 { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .muted { opacity:.7 }
+    .btn { background:linear-gradient(to right,#3CC78F,#3cc7c0ff); border:none; padding:8px 12px; border-radius:8px; }
+    .btn.danger { background: #ef4444; color:white; }
+    #denyModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:2000; }
+    #denyModal .modal-box { background:white; max-width:640px; width:90%; padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+    #denyModal .modal-box h3 { margin-top:0; }
+    #denyModal textarea { width:100%; min-height:110px; padding:8px; border-radius:6px; border:1px solid #ddd; resize:vertical }
+    #denyModal .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
+    #denyModal .btn { padding:8px 14px }
+  </style>
+</head>
+
+<body>
+  <!-- header -->
+  <header>
+    <div class="header-area">
+      <div id="sticky-header" class="main-header-area">
+        <div class="container-fluid">
+          <div class="row align-items-center">
+            <div class="col-xl-3 col-lg-3">
+              <th:block th:if="${session.username} != null">
+                <p class="saludo">¡Hola <b th:text="${session.username}"></b>! (rol: <span th:text="${session.rol}"></span>)</p>
+              </th:block>
+            </div>
+            <div class="col-xl-9 col-lg-9">
+              <div class="main-menu">
+                <nav>
+                  <ul id="navigation">
+                    <li><a th:href="@{/home}">Inicio</a></li>
+                    <li th:if="${session.rol} == 'PRESIDENTE'"><a th:href="@{/ui/preinscripciones}">Solicitudes de inscripción</a></li>
+                    <li th:if="${session.username} == null"><a class="login-btn" th:href="@{/auth/login}">Ingresar</a></li>
+                    <li th:if="${session.username} != null"><a th:href="@{/auth/logout}">Salir</a></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2>Preinscripciones</h2>
+        <a class="btn" th:href="@{/home}">← Volver</a>
+      </div>
+
+      <div th:if="${msg}" style="margin-bottom:8px; padding:8px; border-radius:8px; background:#e6ffef; border:1px solid #065f46; color:#065f46;" th:text="${msg}"></div>
+      <div th:if="${error}" style="margin-bottom:8px; padding:8px; border-radius:8px; background:#ffe6e6; border:1px solid #7f1d1d; color:#7f1d1d;" th:text="${error}"></div>
+
+      <div th:if="${#lists.isEmpty(preinscripciones)}" class="muted">No hay preinscripciones.</div>
+
+      <div th:each="p : ${preinscripciones}" class="card">
+        <div class="row1">
+          <div>
+            <div><strong th:text="${p.nombre}"></strong> <span th:if="${p.apellido}" th:text="${' ' + p.apellido}"></span></div>
+            <div class="muted" th:text="${p.motivo != null ? p.motivo : '-'}"></div>
+            <div class="muted">Email: <span th:text="${p.email}"></span> · Tel: <span th:text="${p.telefono != null ? p.telefono : '-'}"></span></div>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center;">
+            <!-- Si está vigente mostramos acciones; si no, mostramos estado -->
+            <div th:if="${p.estado == 'VIGENTE' or p.estado == null}">
+              <a class="btn" th:href="@{|/auth/register?preId=${p.id}&nombre=${p.nombre}&apellido=${p.apellido}&email=${p.email}&telefono=${p.telefono}|}">Cargar en formulario</a>
+              <button class="btn danger" type="button" th:onclick="'openDenyModal(' + ${p.id} + ')'">Denegar</button>
+            </div>
+
+            <div th:if="${p.estado != 'VIGENTE' and p.estado != null}" style="display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:bold; color:#ef4444;">DENEGADA</span>
+              <span th:if="${p.motivoRechazo != null}" class="muted" th:text="${p.motivoRechazo}"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Denegar modal -->
+  <div id="denyModal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3>Denegar preinscripción</h3>
+      <p>Ingrese el motivo por el cual desea denegar esta solicitud. Esto quedará registrado.</p>
+      <textarea id="denyMotivo" placeholder="Motivo de rechazo (requerido)"></textarea>
+      <div class="modal-actions">
+        <button class="btn" type="button" onclick="closeDenyModal()">Cancelar</button>
+        <button class="btn danger" type="button" onclick="confirmDeny()">Confirmar denegar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let __currentDenyId = null;
+    function openDenyModal(id) {
+      __currentDenyId = id;
+      const m = document.getElementById('denyModal');
+      document.getElementById('denyMotivo').value = '';
+      m.style.display = 'flex';
+      setTimeout(() => document.getElementById('denyMotivo').focus(), 50);
+    }
+    function closeDenyModal() {
+      const m = document.getElementById('denyModal');
+      m.style.display = 'none';
+      __currentDenyId = null;
+    }
+
+    async function confirmDeny() {
+      const motivo = document.getElementById('denyMotivo').value.trim();
+      if (!motivo) { alert('Por favor ingrese un motivo de rechazo.'); return; }
+      if (!__currentDenyId) { alert('Id de preinscripción no especificado.'); return; }
+
+  const query = `mutation Denegar($id: ID!, $motivoRechazo: String!) { denegarPreinscripcion(id: $id, motivoRechazo: $motivoRechazo) { id estado motivoRechazo } }`;
+      const payload = { query, variables: { id: __currentDenyId, motivoRechazo: motivo } };
+
+      try {
+        const res = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const json = await res.json();
+        if (json.errors) {
+          console.error('GraphQL errors', json.errors);
+          alert('Ocurrió un error: ' + (json.errors[0] && json.errors[0].message ? json.errors[0].message : JSON.stringify(json.errors)));
+          return;
+        }
+        closeDenyModal();
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        alert('Error de red al intentar denegar.');
+      }
+    }
+  </script>
+
+  <script th:src="@{/charifit/js/vendor/jquery-1.12.4.min.js}"></script>
+  <script th:src="@{/charifit/js/main.js}"></script>
+</body>
+
+</html>
