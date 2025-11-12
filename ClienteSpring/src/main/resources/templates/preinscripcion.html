@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content="Formulario de preinscripción">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Icono y estilos del theme -->
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/charifit/img/favicon.png}">
+  <link rel="stylesheet" th:href="@{/charifit/css/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/charifit/css/owl.carousel.min.css}" />
+  <link rel="stylesheet" th:href="@{/charifit/css/magnific-popup.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/font-awesome.min.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/themify-icons.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/nice-select.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/flaticon.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/gijgo.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/animate.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/slicknav.css}">
+  <link rel="stylesheet" th:href="@{/charifit/css/style.css}">
+
+  <title>Preinscripción</title>
+
+  <!-- Estilos para mantener la apariencia con otras paginas -->
+  <style>
+    /* Contenedor principal */
+    body { background: white; color: black; font-family: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .wrap { max-width: 1200px; margin: 40px auto; padding: 30px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(10px); border: 1px solid #3CC78F; }
+    h1 { margin: 0 0 12px; color: black; font-weight: 700; }
+    /* Botones */
+    .btn { background: linear-gradient(to right, #3CC78F, #3cc7c0ff); border: none; color: black; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    /* Mensajes de resultado */
+    .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-weight: 500; }
+    .alert-success { background: rgba(6,78,59,0.3); border: 1px solid #065f46; color: #6ee7b7; }
+    .alert-error { background: rgba(127,29,29,0.3); border: 1px solid #991b1b; color: #fca5a5; }
+    /* Layout del formulario (responsive) */
+    .form-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+    @media(min-width:992px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+    .form-row { display:flex; flex-direction:column; gap:6px; }
+    label { font-weight:600; }
+    input, textarea, select { padding:10px; border-radius:8px; border:1px solid #d1d5db; }
+  </style>
+
+</head>
+<body>
+
+  <!-- inicio del header -->
+  <header>
+    <div class="header-area">
+      <div id="sticky-header" class="main-header-area">
+        <div class="container-fluid">
+          <div class="row align-items-center">
+            <div class="col-xl-3 col-lg-3">
+              <th:block th:if="${session.username} != null">
+                <p class="saludo">
+                  ¡Hola <b th:text="${session.username}"></b>!
+                  (rol: <span th:text="${session.rol}"></span>)
+                </p>
+              </th:block>
+            </div>
+            <div class="col-xl-9 col-lg-9">
+              <div class="main-menu">
+                <nav>
+                  <ul id="navigation">
+                    <li><a th:href="@{/home}">Inicio</a></li>
+                    <li><a th:href="@{/preinscripcion}">Preinscripción</a></li>
+
+                    <li><a href="#">Solicitudes<i class="ti-angle-down"></i></a>
+                      <ul class="submenu">
+                        <li><a th:href="@{/ui/solicitudes}">Ver solicitudes</a></li>
+                        <li><a th:href="@{/ui/solicitudes/nueva}">Nueva solicitud</a></li>
+                      </ul>
+                    </li>
+                    
+                    <!-- Verificacion: segun rol -->
+                    <li th:if="${session.rol} == 'PRESIDENTE'"><a href="#">Usuarios<i class="ti-angle-down"></i></a>
+                      <ul class="submenu">
+                        <li><a th:href="@{/auth/register}">Registrar usuario</a></li>
+                        <li><a th:href="@{/admin/users}">Administrar Usuarios</a></li>
+                      </ul>
+                    </li>
+
+                    <li th:if="${session.rol} == 'PRESIDENTE'">
+                      <a th:href="@{/eventos}">Eventos</a>
+                    </li>
+
+                    <li th:if="${session.rol} == 'PRESIDENTE' or ${session.rol} == 'VOCAL'">
+                      <a th:href="@{/donaciones}">Donaciones</a>
+                    </li>
+
+                    <!-- INFORMES - boton dropdown con enlaces -->
+                    <li>
+                      <a href="#">Informes<i class="ti-angle-down"></i></a>
+                      <ul class="submenu">
+                        <li th:if="${session.rol == 'PRESIDENTE' or session.rol == 'VOCAL'}">
+                          <a th:href="@{/informes/donaciones}">Informe de donaciones</a>
+                        </li>
+
+                        <li><a th:href="@{/informes/eventos-participacion}">Informe de Participación en eventos</a></li>
+                      </ul>
+                    </li>
+
+                    <!-- login/logout -->
+                    <li th:if="${session.username} == null">
+                      <a class="login-btn" th:href="@{/auth/login}">Ingresar</a>
+                    </li>
+                    <li th:if="${session.username} != null">
+                      <a th:href="@{/auth/logout}">Salir</a>
+                    </li>
+                  </ul>
+
+                </nav>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="mobile_menu d-block d-lg-none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main style="margin-top: 120px; margin-bottom: 60px;">
+    <div class="wrap">
+      <h1>Preinscripción</h1>
+
+  <div id="result" class=""></div>
+
+      <form id="preinsc-form">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Nombre *</label>
+            <input type="text" id="nombre" name="nombre" required />
+          </div>
+
+          <div class="form-row">
+            <label>Apellido</label>
+            <input type="text" id="apellido" name="apellido" />
+          </div>
+
+          <div class="form-row">
+            <label>Fecha de nacimiento * (DD-MM-YYYY)</label>
+            <!-- usa datepicker para forzar formato dd-mm-yyyy y evitar el placeholder mm/dd/yyyy del navegador -->
+            <input type="text" id="fechaNacimiento" name="fechaNacimiento" placeholder="DD-MM-YYYY" required autocomplete="off" />
+            <small>Se enviará en formato DD-MM-YYYY (ej. 01-11-1990)</small>
+          </div>
+
+          <div class="form-row">
+            <label>Teléfono</label>
+            <input type="text" id="telefono" name="telefono" />
+          </div>
+
+          <div class="form-row">
+            <label>E-mail *</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+
+          <div class="form-row" style="grid-column: 1 / -1;">
+            <label>Motivo</label>
+            <textarea id="motivo" name="motivo" rows="4"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:18px; display:flex; gap:12px; justify-content:space-between; align-items:center;">
+          <div></div>
+          <div>
+            <button type="submit" class="btn">Enviar preinscripción</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+      <!-- Script del submit -->
+      <script>
+    // Obtengo el formulario y registro el manejador de submit
+    document.getElementById('preinsc-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      //Leer valores del formulario. La fecha se espera en formato DD-MM-YYYY (el datepicker la produce así)
+      const rawFecha = document.getElementById('fechaNacimiento').value;
+      const resultDiv = document.getElementById('result'); // contenedor de mensajes
+
+      //Validacion: FECHA. Formato de fecha con: regex
+      if (rawFecha && !/^\d{2}-\d{2}-\d{4}$/.test(rawFecha)) {
+        resultDiv.className = 'alert alert-error';
+        resultDiv.textContent = 'Formato de fecha inválido. Use DD-MM-YYYY (ej. 31-12-1990)';
+        return;
+      }
+
+      //Construyo el objeto que va a ser enviado como input de la mutation GraphQL
+      const input = {
+        nombre: document.getElementById('nombre').value,
+        apellido: document.getElementById('apellido').value,
+        fechaNacimiento: rawFecha,
+        telefono: document.getElementById('telefono').value,
+        email: document.getElementById('email').value,
+        motivo: document.getElementById('motivo').value
+      };
+
+      //Query GraphQL (mutation). La mutation 'createPreinscripcion' esta definida en schema GraphQL del backend y espera PreinscripcionInput
+      const query = `mutation CreatePre($input: PreinscripcionInput!) { createPreinscripcion(input: $input) { id nombre email } }`;
+
+      try {
+        //EnvIo al endpoint /graphql usando fetch
+        const res = await fetch('/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, variables: { input } })
+        });
+
+        //Lectura segura del cuerpo: primero como texto, luego intento parsear JSON. cubre respuestas no-JSON.
+        const text = await res.text();
+        let json = null;
+        try { json = text ? JSON.parse(text) : null; } catch (e) { /* no JSON */ }
+
+        //Manejo errores HTTP (status !== 200-299)
+        if (!res.ok) {
+          if (json && json.errors) {
+            resultDiv.className = 'alert alert-error';
+            resultDiv.textContent = json.errors.map(e => e.message).join('; ');
+          } else {
+            //Mensaje genwrico con parte del cuerpo para debugging
+            resultDiv.className = 'alert alert-error';
+            resultDiv.textContent = `Error del servidor (${res.status} ${res.statusText})` + (text ? (" - " + text.substring(0, 300)) : '');
+          }
+          return;
+        }
+
+        //Si HTTP OK, revisar payload JSON de GraphQL. Si da error, muestra mensaje de validacion. Si existe data.createPreinscripcion, bien
+        if (json && json.errors) {
+          resultDiv.className = 'alert alert-error';
+          resultDiv.textContent = json.errors.map(e => e.message).join('; ');
+        } else if (json && json.data && json.data.createPreinscripcion) {
+          //Caso exitoso: muestro mensaje y limpio el formulario
+          resultDiv.className = 'alert alert-success';
+          resultDiv.textContent = 'Preinscripción enviada. ID: ' + json.data.createPreinscripcion.id;
+          document.getElementById('preinsc-form').reset();
+        } else {
+          //Caso raro: respuesta sin data ni errors
+          resultDiv.className = 'alert alert-error';
+          resultDiv.textContent = 'Respuesta inesperada del servidor';
+          console.warn('Respuesta inesperada de /graphql:', text);
+        }
+
+      } catch (err) {
+        //Errores de red / excepciones JS
+        console.error('Error al invocar /graphql:', err);
+        resultDiv.className = 'alert alert-error';
+        resultDiv.textContent = 'Error de comunicación con el servidor. Revisa la consola para más detalles.';
+      }
+    });
+  </script>
+
+  <!-- Scripts del theme y librerias: jQuery, Bootstrap, plugins y Gijgo (datepicker) -->
+  <script th:src="@{/charifit/js/vendor/modernizr-3.5.0.min.js}"></script>
+  <script th:src="@{/charifit/js/vendor/jquery-1.12.4.min.js}"></script>
+  <script th:src="@{/charifit/js/popper.min.js}"></script>
+  <script th:src="@{/charifit/js/bootstrap.min.js}"></script>
+  <script th:src="@{/charifit/js/owl.carousel.min.js}"></script>
+  <script th:src="@{/charifit/js/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/charifit/js/ajax-form.js}"></script>
+  <script th:src="@{/charifit/js/waypoints.min.js}"></script>
+  <script th:src="@{/charifit/js/jquery.counterup.min.js}"></script>
+  <script th:src="@{/charifit/js/imagesloaded.pkgd.min.js}"></script>
+  <script th:src="@{/charifit/js/scrollIt.js}"></script>
+  <script th:src="@{/charifit/js/jquery.scrollUp.min.js}"></script>
+  <script th:src="@{/charifit/js/wow.min.js}"></script>
+  <script th:src="@{/charifit/js/nice-select.min.js}"></script>
+  <script th:src="@{/charifit/js/jquery.slicknav.min.js}"></script>
+  <script th:src="@{/charifit/js/jquery.magnific-popup.min.js}"></script>
+  <script th:src="@{/charifit/js/plugins.js}"></script>
+  <script th:src="@{/charifit/js/gijgo.min.js}"></script>
+  <script th:src="@{/charifit/js/contact.js}"></script>
+  <script th:src="@{/charifit/js/jquery.ajaxchimp.min.js}"></script>
+  <script th:src="@{/charifit/js/jquery.form.js}"></script>
+  <script th:src="@{/charifit/js/jquery.validate.min.js}"></script>
+  <script th:src="@{/charifit/js/mail-script.js}"></script>
+  <script th:src="@{/charifit/js/main.js}"></script>
+
+  <!-- Inicializar datepicker Gijgo para forzar formato DD-MM-YYYY -->
+  <script>
+    (function(){
+      try {
+        // Solo inicializar si jQuery y el plugin datepicker estan disponibles
+        if (window.$ && typeof $.fn.datepicker === 'function') {
+          // El campo '#fechaNacimiento' recibe fechas en formato 'dd-mm-yyyy'
+          $('#fechaNacimiento').datepicker({ uiLibrary: 'bootstrap', format: 'dd-mm-yyyy' });
+        }
+      } catch (e) {
+        // Si falla datepicker, ingreso manual de fecha
+        console.warn('No se pudo inicializar datepicker:', e);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -17,9 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserServiceGrpc.UserServiceBlockingStub users;
+    private final com.empuje.ui.service.PreinscripcionService preService;
 
-    public AuthController(UserServiceGrpc.UserServiceBlockingStub users) {
+    public AuthController(UserServiceGrpc.UserServiceBlockingStub users,
+                          com.empuje.ui.service.PreinscripcionService preService) {
         this.users = users;
+        this.preService = preService;
     }
 
     @GetMapping("/login")
@@ -58,28 +61,41 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(jakarta.servlet.http.HttpSession session) {
         session.invalidate();
-        return "redirect:/"; // más robusto que /home
+        return "redirect:/"; 
     }
 
     @GetMapping("/register")
-    public String registerForm(HttpSession session) {
+    public String registerForm(HttpSession session,
+                               @RequestParam(required = false) Long preId,
+                               @RequestParam(required = false) String nombre,
+                               @RequestParam(required = false) String apellido,
+                               @RequestParam(required = false) String email,
+                               @RequestParam(required = false) String telefono,
+                               org.springframework.ui.Model model) {
         // Solo PRESIDENTE puede registrar
         if (session.getAttribute("rol") == null ||
                 !"PRESIDENTE".equals(session.getAttribute("rol").toString())) {
             return "redirect:/home";
         }
+        // Si el caller paso parametros de precarga (desde preinscripcion) se reenvian a la plantilla
+        if (preId != null) model.addAttribute("preId", preId);
+        if (nombre != null) model.addAttribute("prefillNombre", nombre);
+        if (apellido != null) model.addAttribute("prefillApellido", apellido);
+        if (email != null) model.addAttribute("prefillEmail", email);
+        if (telefono != null) model.addAttribute("prefillTelefono", telefono);
         return "register";
     }
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
-            @RequestParam String nombre,
-            @RequestParam String apellido,
-            @RequestParam String email,
-            @RequestParam(required = false) String telefono,
-            @RequestParam String rol, // <--- NUEVO: viene del form
-            Model model,
-            HttpSession session) {
+        @RequestParam String nombre,
+        @RequestParam String apellido,
+        @RequestParam String email,
+        @RequestParam(required = false) String telefono,
+        @RequestParam String rol,
+        @RequestParam(required = false) Long preId,
+        Model model,
+        HttpSession session) {
         // Bloqueo por rol
         if (session.getAttribute("rol") == null ||
                 !"PRESIDENTE".equals(session.getAttribute("rol").toString())) {
@@ -128,15 +144,33 @@ public class AuthController {
             var resp = users.createUser(req);
 
             if (!resp.getSuccess()) {
-                model.addAttribute("error", resp.getMessage());
+                //No exponer mensajes internos devueltos por el backend en la UI.
+                System.err.println("[AuthController] createUser fallo: " + resp.getMessage());
+                model.addAttribute("error", "No se pudo crear el usuario (ver logs del servidor para detalles). ");
                 return "register";
             }
 
             model.addAttribute("ok", "Usuario creado. Revisá la consola del servidor (contraseña generada).");
+            if (preId != null) {
+                try {
+                    preService.deleteById(preId);
+                } catch (Exception ignore) {
+                }
+            }
             return "register";
 
         } catch (StatusRuntimeException e) {
-            model.addAttribute("error", "Error al registrar: " + e.getStatus().getDescription());
+            //No exponer trazas de error internas al usuario en la UI.
+            //Loguear en servidor y mostrar un mensaje amigable.
+            System.err.println("[AuthController] Error gRPC al crear usuario: " + e.getMessage());
+            //Intenta limpiar la preinscripción si vino preId (el backend logro crear el usuario)
+            if (preId != null) {
+                try {
+                    preService.deleteById(preId);
+                } catch (Exception ignore) {
+                }
+            }
+            model.addAttribute("ok", "Usuario creado. (Advertencia: fallo en notificaciones — revisar logs del servidor)");
             return "register";
         }
     }

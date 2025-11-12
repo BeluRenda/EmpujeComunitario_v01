@@ -49,7 +49,7 @@ public class PreinscripcionAdminController {
         }
 
         try {
-            // For simplicity we delete the preinscripcion so it won't show again.
+            // Borro la preinscripción
             service.deleteById(id);
             ra.addFlashAttribute("msg", "Preinscripción denegada y removida.");
         } catch (Exception e) {

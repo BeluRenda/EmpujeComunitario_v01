@@ -31,18 +31,18 @@ public class Preinscripcion {
     @Column(columnDefinition = "TEXT")
     private String motivo;
 
-    // Estado de la preinscripción: VIGENTE | DENEGADA
+    //Estado de la preinscripción: VIGENTE | DENEGADA
     @Column(length = 20)
     private String estado;
 
-    // Motivo de rechazo en caso de denegación
+    //Motivo de rechazo en caso de denegacion
     @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
     private String motivoRechazo;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
-    // Getters/Setters
+    //Getters/Setters
     public Long getId() { return id; }
 
     public String getNombre() { return nombre; }

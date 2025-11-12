@@ -169,7 +169,7 @@
         </div>
       </div>
     </div>
-    <!-- bradcam_area_end  -->
+
 
     <div class="page-wrapper bg-gra-03 p-t-45 p-b-50">
       <div class="wrapper wrapper--w790">
@@ -185,13 +185,15 @@
                   <div class="row row-space">
                     <div class="col-2">
                       <div class="input-group-desc">
-                        <input class="input--style-5" type="text" id="nombre" name="nombre" required>
+                            <input class="input--style-5" type="text" id="nombre" name="nombre" required
+                                   th:value="${prefillNombre}">
                         <label class="label--desc" for="nombre">Nombre</label>
                       </div>
                     </div>
                     <div class="col-2" id="col-2-apellido">
                       <div class="input-group-desc">
-                        <input class="input--style-5" type="text" id="apellido" name="apellido" required>
+                            <input class="input--style-5" type="text" id="apellido" name="apellido" required
+                                   th:value="${prefillApellido}">
                         <label class="label--desc" for="apellido">Apellido</label>
                       </div>
                     </div>
@@ -210,7 +212,8 @@
                 <div class="name">Email* &ensp;&ensp;&ensp;:&ensp;</div>
                 <div class="value">
                   <div class="input-group">
-                    <input class="input--style-5" type="email" id="email" name="email" required>
+                    <input class="input--style-5" type="email" id="email" name="email" required
+                           th:value="${prefillEmail}">
                   </div>
                 </div>
               </div>
@@ -219,7 +222,8 @@
                 <div class="value">
 
                   <div class="input-group">
-                    <input class="input--style-5" type="text" id="telefono" name="telefono">
+                    <input class="input--style-5" type="text" id="telefono" name="telefono"
+                           th:value="${prefillTelefono}">
                   </div>
 
                 </div>
@@ -245,6 +249,7 @@
               <p class="note">* La clave se genera aleatoria en el servidor y se guarda encriptada.</p>
 
               <div class="actions">
+                <input type="hidden" name="preId" th:if="${preId != null}" th:value="${preId}" />
                 <button class="btn btn--radius-2 btn--red" type="submit">Crear usuario</button>
                 <a class="cancel-link" th:href="@{/home}">Cancelar</a>
               </div>

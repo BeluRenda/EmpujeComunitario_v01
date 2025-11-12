@@ -88,6 +88,15 @@ type Query {
   La UI (donaciones.html) usa esta query para poblar el <select>.
   """
   myFilters: [DonationSavedFilter!]!
+  """
+  Lista de preinscripciones. Si se pasa estado devuelve solo las de ese estado (p. ej. VIGENTE).
+  """
+  preinscripciones(estado: String): [Preinscripcion!]!
+
+  """
+  Recupera una preinscripción por id.
+  """
+  preinscripcion(id: ID!): Preinscripcion
 }
 
 # =============================================================
@@ -131,4 +140,44 @@ type Mutation {
   Elimina un filtro de donaciones (retorna true si se eliminó).
   """
   deleteFilter(id: ID!): Boolean!
+
+  """
+  Crea una preinscripción de un postulante a la organización.
+  Valida que el e-mail sea único.
+  """
+  createPreinscripcion(input: PreinscripcionInput!): Preinscripcion!
+  """
+  Marca una preinscripción como denegada y guarda el motivo de rechazo.
+  Retorna la preinscripción actualizada.
+  """
+  denegarPreinscripcion(id: ID!, motivoRechazo: String!): Preinscripcion!
+}
+
+
+"""
+Representa una preinscripción enviada por un postulante.
+"""
+type Preinscripcion {
+  id: ID!
+  nombre: String!
+  apellido: String
+  fechaNacimiento: String!
+  telefono: String
+  email: String!
+  motivo: String
+  createdAt: String
+  # Estado: VIGENTE | DENEGADA
+  estado: String
+  # Motivo de rechazo si fue denegada
+  motivoRechazo: String
+}
+
+input PreinscripcionInput {
+  nombre: String!
+  apellido: String
+  # Fecha de nacimiento en formato DD-MM-YYYY (ej. 31-12-1990)
+  fechaNacimiento: String!
+  telefono: String
+  email: String!
+  motivo: String
 }
